@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {Button, Form, Input, Link} from "@heroui/react";
 
@@ -7,7 +7,7 @@ export default function LoginForm() {
   const router = useRouter()
 
   const [isLoading, setLoading] = useState(false);
-  const [isAuth, setAuth] = useState(false);
+  const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth='));
 
   async function onSubmit(event) {
     event.preventDefault()
@@ -40,12 +40,6 @@ export default function LoginForm() {
     }
   }
  
-  useEffect(() => {
-    //simple check for cookie existence
-    if(document.cookie.indexOf('isAuth=')) {
-      setAuth(true);
-    }
-  }, [isAuth]);
   return (
     isAuth ?
     <>
