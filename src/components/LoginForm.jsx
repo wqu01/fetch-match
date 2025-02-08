@@ -7,7 +7,7 @@ export default function LoginForm() {
   const router = useRouter()
 
   const [isLoading, setLoading] = useState(false);
-  const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth='));
+  const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth=') !== -1);
 
   async function onSubmit(event) {
     event.preventDefault()
