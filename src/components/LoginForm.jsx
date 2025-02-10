@@ -8,8 +8,9 @@ export default function LoginForm() {
 
   const [isLoading, setLoading] = useState(false);
   const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth=') !== -1);
+  const [hasError, setHasError] = useState(false);
 
-  async function onSubmit(event) {
+  const onSubmit = async (event) => {
     event.preventDefault()
  
     setLoading(true);
@@ -36,6 +37,7 @@ export default function LoginForm() {
       router.push('/');
    
     } else {
+      setHasError(true);
       throw new Error(`Response status: ${response.status}`);
     }
   }
@@ -80,6 +82,11 @@ export default function LoginForm() {
           Submit
         </Button>
       </div>
+      {hasError && (
+        <div className="text-small text-default-500">
+          Log in failed. Please try again later.
+        </div>
+      )}
   </Form>  
   )
 }
