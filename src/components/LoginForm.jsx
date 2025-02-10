@@ -10,15 +10,16 @@ export default function LoginForm() {
   const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth=') !== -1);
   const [hasError, setHasError] = useState(false);
 
-  const onSubmit = async (event) => {
-    event.preventDefault()
+  const onSubmit = async (e) => {
+    e.preventDefault()
  
     setLoading(true);
-    const formData = new FormData(event.currentTarget)
+    const formData = new FormData(e.currentTarget)
     const email = formData.get('email')
     const name = formData.get('name')
  
-    const response = await fetch('https://frontend-take-home-service.fetch.com/auth/login', {
+    try {
+          const response = await fetch('https://frontend-take-home-service.fetch.com/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -37,8 +38,13 @@ export default function LoginForm() {
       router.push('/');
    
     } else {
-      setHasError(true);
       throw new Error(`Response status: ${response.status}`);
+    }
+    }
+    catch (error) {
+        setLoading(false);
+        setHasError(true);
+        console.error("Could not log in", error);
     }
   }
  
