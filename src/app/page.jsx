@@ -23,6 +23,8 @@ export default function Home() {
     setIsLoading(true);
     setSubmitted(true);
     setIsLoading(false);
+
+    
   }
 
   const handleReset = (e) => {
@@ -55,27 +57,27 @@ export default function Home() {
     console.log('fetching dog ids');
     const fetchDogIds = async () => {
        const data = await getDogs(new URLSearchParams({
-        size: '10',
-        from: '10',
+        // size: '30', use default 25
         sort: 'breed:asc'
       }).toString());
        setDogData(data);
-      console.log(data)
+      // console.log(data)
     }
     fetchDogIds();
   }, []);
 
   return (
-   <div className="container max-w-[1440px]">
+   <div className="container max-w-[1440px] p-8 lg:p-36">
     <div className="hero">
       <p>Start finding your match by filtering for a breed (or just browse all breeds!)</p>
       <p>Saw a dog you like? Add them to your favorites</p>
       <p>Once you are ready, click on Find my match and get matched.</p>
     </div>
-    <div className="filter">
-      <Form className="w-full max-w-xs flex gap-4" onSubmit={handleSearch}  validationBehavior="native">  
+    <div className="filter py-16">
+      <Form className="w-full flex flex-row flex-wrap gap-4" onSubmit={handleSearch}  validationBehavior="native">  
       <Select
-        className="max-w-xs"
+        className="max-w-[280px]"
+        size="sm"
         label="Filter by breed"
         placeholder="All breeds"
         selectionMode="multiple"
@@ -87,29 +89,34 @@ export default function Home() {
         ))}
       </Select>    
       <Input
-          label="Minimum age"
-          placeholder="0"
-          type="number"
-          min="0"
-          value={minAge} onValueChange={setMinAge}
-        />
-         <Input
-          label="Maximum age"
-          placeholder="29"
-          type="number"
-          max="29"
-          value={maxAge} onValueChange={setMaxAge}
-
-        />
-        <Input
-          label="Filter by Zipcode"
-          placeholder="000000"
-          value={zipcode} onValueChange={setZipcode}
-        />
-        <Select className="max-w-xs" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["ascending"]} selectedKeys={sortOrder} onValueChange={setSortOrder}>
-            <SelectItem key="ascending">Ascending</SelectItem>
-            <SelectItem key="descending">Descending</SelectItem>
-        </Select>
+        size="sm"
+        className="max-w-[120px]"
+        label="Minimum age"
+        placeholder="0"
+        type="number"
+        min="0"
+        value={minAge} onValueChange={setMinAge}
+      />
+      <Input
+        size="sm"
+        className="max-w-[120px]"
+        label="Maximum age"
+        placeholder="29"
+        type="number"
+        max="29"
+        value={maxAge} onValueChange={setMaxAge}
+      />
+      <Input
+        size="sm"
+        className="max-w-[120px]"
+        label="Zipcode"
+        placeholder="000000"
+        value={zipcode} onValueChange={setZipcode}
+      />
+      <Select className="max-w-[120px]" size="sm" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["ascending"]} selectedKeys={sortOrder} onValueChange={setSortOrder}>
+          <SelectItem key="ascending">Ascending</SelectItem>
+          <SelectItem key="descending">Descending</SelectItem>
+      </Select>
 
       <div className="flex gap-2">
         <Button color="primary" type="submit" isLoading={isLoading ? true : false}>
@@ -134,7 +141,7 @@ export default function Home() {
       )}
       </Form>  
     </div>
-    <div className="search-result gap-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+    <div className="search-result gap-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
       {dogData?.dogDetails && dogData.dogDetails.map((dog) =>(
         <Card key={dog.id}>
          <CardBody className="overflow-visible p-0">
