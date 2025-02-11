@@ -7,7 +7,7 @@ export default function LoginForm() {
   const router = useRouter()
 
   const [isLoading, setLoading] = useState(false);
-  const [isAuth, setAuth] = useState(document.cookie.indexOf('isAuth=') !== -1);
+  const [isAuth, setAuth] = useState(document?.cookie.indexOf('isAuth=') !== -1);
   const [hasError, setHasError] = useState(false);
 
   const onSubmit = async (e) => {
