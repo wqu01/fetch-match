@@ -25,6 +25,7 @@ export const getBreeds = async () => {
 
 export const getDogs = async (searchParams) => {
 
+    console.log(searchParams);
     try {
         const response = await fetch(`${BASE_URL}/dogs/search?${searchParams}`, {
             method: 'GET',
@@ -35,6 +36,7 @@ export const getDogs = async (searchParams) => {
         if (response.ok) {
             const dogIds = await response.json();
 
+            console.log(dogIds);
             if(dogIds.resultIds.length > 0) {
                 //make request to get dog details
                 const dogDetailRes = await fetch(`${BASE_URL}/dogs`, {
@@ -46,12 +48,16 @@ export const getDogs = async (searchParams) => {
 
                 if (dogDetailRes.ok) {
                     const dogDetails = await dogDetailRes.json();
-                    return {nextQuery: dogIds.next ? dogIds.next : null, prevQuery: dogIds.prev ? dogIds.prev : null, dogDetails: dogDetails};
+                    return {nextQuery: dogIds.next ? dogIds.next : null, prevQuery: dogIds.prev ? dogIds.prev : null, dogDetails: dogDetails, error: false};
                 }
                 else {
                     // Handle errors
                     throw new Error(`Response status: ${response.status}`);
                 }
+            }
+
+            else {
+                return {error: true};
             }
         } else {
         // Handle errors

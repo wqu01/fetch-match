@@ -1,30 +1,55 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
 import { getBreeds, getDogs } from "@/utils/api";
 import {Button, Form, Select, SelectItem, Input, Card, CardHeader, CardBody, CardFooter, Image} from "@heroui/react";
 // import Image from 'next/image';
 
 export default function Home() {
-  const router = useRouter();
+
+  //form status
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  //filters
   const [dogBreeds, setDogBreeds] = useState();
   const [selectedBreeds, setSelectedBreeds] = useState(new Set([]));
   const [minAge, setMinAge] = useState();
   const [maxAge, setMaxAge] = useState();
   const [zipcode, setZipcode] = useState();
-  const [sortOrder, setSortOrder] = useState();
+  const [sortOrder, setSortOrder] = useState(new Set(['asc']));
   const [dogData, setDogData] = useState();
+
+  //paginations
+  const [prevQuery, setPrevQuery] = useState();
+  const [nextQuery, setNextQuery] = useState();
 
   const handleSearch = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setSubmitted(true);
-    setIsLoading(false);
+    const fetchDogs = async () => {
 
-    
+      const query = [
+        selectedBreeds.size > 0 && `breeds=${Array.from(selectedBreeds).join('&')}`,
+        `&sort=breed:${Array.from(sortOrder).join('')}`,
+        minAge && `&ageMin=${minAge}`,
+        maxAge && `&ageMax=${maxAge}`,
+        zipcode && `&zipcode=${zipcode}`
+      ].filter(Boolean).join('');
+
+      const data = await getDogs(query);
+      setSubmitted(true);
+
+      if(data.error) {
+        setHasError(true);
+      }
+      setDogData(data?.dogDetails);
+      setNextQuery(data?.nextQuery);
+      setPrevQuery(data?.prevQuery);
+
+      setIsLoading(false);
+    }
+    fetchDogs();
   }
 
   const handleReset = (e) => {
@@ -53,17 +78,14 @@ export default function Home() {
   }, []);
 
   //fetch initial list of dogs
+  
   useEffect(() => {
-    console.log('fetching dog ids');
-    const fetchDogIds = async () => {
-       const data = await getDogs(new URLSearchParams({
-        // size: '30', use default 25
-        sort: 'breed:asc'
-      }).toString());
-       setDogData(data);
-      // console.log(data)
+    console.log('fetching init dog data');
+    const fetchInitDog = async () => {
+      const data = await getDogs('sort=breed:asc');
+      setDogData(data?.dogDetails);
     }
-    fetchDogIds();
+    fetchInitDog();
   }, []);
 
   return (
@@ -94,7 +116,16 @@ export default function Home() {
         label="Minimum age"
         placeholder="0"
         type="number"
+        max="29"
         min="0"
+        validate={(value) => {
+          if (maxAge && value > maxAge) {
+            return "Mininum age must be less than the maximum age.";
+          }
+          else {
+            return null;
+          }
+        }}
         value={minAge} onValueChange={setMinAge}
       />
       <Input
@@ -103,7 +134,16 @@ export default function Home() {
         label="Maximum age"
         placeholder="29"
         type="number"
+        min="0"
         max="29"
+        validate={(value) => {
+          if (minAge && maxAge && value < minAge) {
+            return "Maximum age must be greater than the minimum age.";
+          }
+          else {
+            return null;
+          }
+        }}
         value={maxAge} onValueChange={setMaxAge}
       />
       <Input
@@ -113,9 +153,9 @@ export default function Home() {
         placeholder="000000"
         value={zipcode} onValueChange={setZipcode}
       />
-      <Select className="max-w-[120px]" size="sm" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["ascending"]} selectedKeys={sortOrder} onValueChange={setSortOrder}>
-          <SelectItem key="ascending">Ascending</SelectItem>
-          <SelectItem key="descending">Descending</SelectItem>
+      <Select className="max-w-[120px]" size="sm" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["asc"]} selectedKeys={sortOrder} onSelectionChange={setSortOrder}>
+          <SelectItem key="asc">Ascending</SelectItem>
+          <SelectItem key="desc">Descending</SelectItem>
       </Select>
 
       <div className="flex gap-2">
@@ -126,14 +166,6 @@ export default function Home() {
           Reset filter
         </Button>
       </div>
-
-      {submitted && <>
-        <p className="text-small text-default-500">Selected: {Array.from(selectedBreeds).join(", ")}</p>
-        <p className="text-small text-default-500">Min age: {minAge}</p>
-        <p className="text-small text-default-500">Max age: {maxAge}</p>
-        <p className="text-small text-default-500">Zipcode: {zipcode}</p>
-      </> 
-}
       {hasError && (
         <div className="text-small text-default-500">
           Oops something went wrong. Please try again later.
@@ -142,7 +174,7 @@ export default function Home() {
       </Form>  
     </div>
     <div className="search-result gap-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-      {dogData?.dogDetails && dogData.dogDetails.map((dog) =>(
+      {dogData && dogData.map((dog) =>(
         <Card key={dog.id}>
          <CardBody className="overflow-visible p-0">
           <Image
