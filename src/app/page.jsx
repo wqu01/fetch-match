@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from 'next/navigation';
-import { getBreeds } from "@/utils/api";
+import { getBreeds, getDogs } from "@/utils/api";
 import {Button, Form, Select, SelectItem, Input} from "@heroui/react";
 
 export default function Home() {
@@ -22,6 +22,19 @@ export default function Home() {
     setSubmitted(true);
     setIsLoading(false);
   }
+
+  const handleReset = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setSubmitted(true);
+    setIsLoading(false);
+
+    // setMinAge('');
+    // setMaxAge('');
+    // setZipcode('');
+    // setSelectedBreeds(new Set([]));
+  }
+
    useEffect(() => {
     console.log('fetching breeds');
     const fetchBreeds = async () => {
@@ -29,6 +42,21 @@ export default function Home() {
        setDogBreeds(data);
     }
     fetchBreeds();
+  }, []);
+
+  //fetch initial list of dogs
+  useEffect(() => {
+    console.log('fetching dog ids');
+    const fetchDogIds = async () => {
+       const data = await getDogs(new URLSearchParams({
+        size: '10',
+        from: '10',
+        sort: 'breed:asc'
+      }).toString());
+      //  setDogBreeds(data);
+      console.log(data)
+    }
+    fetchDogIds();
   }, []);
 
   return (
@@ -39,7 +67,7 @@ export default function Home() {
       <p>Once you are ready, click on Find my match and get matched.</p>
     </div>
     <div className="filter">
-    <Form className="w-full max-w-xs flex gap-4" onSubmit={handleSearch} validationBehavior="native">  
+    <Form className="w-full max-w-xs flex gap-4" onSubmit={handleSearch}  validationBehavior="native">  
       <Select
         className="max-w-xs"
         label="Filter by breed"
@@ -72,7 +100,7 @@ export default function Home() {
           placeholder="000000"
           value={zipcode} onValueChange={setZipcode}
         />
-        <Select className="max-w-xs" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["ascending"]} onValueChange={setSortOrder}>
+        <Select className="max-w-xs" label="Sort breed by" placeholder="Ascending" defaultSelectedKeys={["ascending"]} selectedKeys={sortOrder} onValueChange={setSortOrder}>
             <SelectItem key="ascending">Ascending</SelectItem>
             <SelectItem key="descending">Descending</SelectItem>
         </Select>
@@ -80,6 +108,9 @@ export default function Home() {
       <div className="flex gap-2">
         <Button color="primary" type="submit" isLoading={isLoading ? true : false}>
           Search
+        </Button>
+        <Button color="secondary" type="reset">
+          Reset filter
         </Button>
       </div>
 
