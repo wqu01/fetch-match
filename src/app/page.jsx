@@ -30,6 +30,7 @@ export default function Home() {
   //form status
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isSubmitted, setSubmitted] = useState(false);
 
   //filters
   const [dogBreeds, setDogBreeds] = useState();
@@ -69,7 +70,7 @@ export default function Home() {
       `&sort=breed:${Array.from(sortOrder).join("")}`,
       minAge && `&ageMin=${minAge}`,
       maxAge && `&ageMax=${maxAge}`,
-      zipcode && `&zipcode=${zipcode}`,
+      zipcode && `&zipCodes=${zipcode}`,
       `&from=${(currentPage - 1) * PAGE_SIZE}`,
       `&size=${PAGE_SIZE}`,
     ]
@@ -77,13 +78,16 @@ export default function Home() {
       .join("");
 
     const data = await getDogs(query);
-
     if (data.error) {
       setHasError(true);
     }
     setDogData(data?.dogDetails);
-    setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
-
+    if (data.total > 0) {
+      setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
+    } else {
+      setMaxPage(1);
+    }
+    setSubmitted(true);
     setIsLoading(false);
   };
 
@@ -108,6 +112,7 @@ export default function Home() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    setSubmitted(false);
     setIsLoading(true);
     setCurrentPage(1);
     fetchDogs();
@@ -274,9 +279,9 @@ export default function Home() {
               </Button>
             </div>
             {hasError && (
-              <div className="text-small text-default-500">
+              <p className="text-small text-default-500">
                 Oops something went wrong. Please try again later.
-              </div>
+              </p>
             )}
           </Form>
         </div>
@@ -312,6 +317,11 @@ export default function Home() {
                 </CardFooter>
               </Card>
             ))}
+          {isSubmitted && !dogData.total && (
+            <p className="text-small text-default-500">
+              No results. Please search again after updating the filter.
+            </p>
+          )}
         </section>
         <div className="pagination flex flex-col gap-5 items-center py-16">
           <Pagination

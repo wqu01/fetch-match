@@ -41,7 +41,7 @@ export const getDogs = async (searchParams) => {
           total: dogIds.total,
         };
       } else {
-        return { error: true };
+        return { dogDetails: [], total: dogIds.total, error: false };
       }
     } else {
       // Handle errors
