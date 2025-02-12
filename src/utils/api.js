@@ -25,7 +25,6 @@ export const getBreeds = async () => {
 
 export const getDogs = async (searchParams) => {
 
-    console.log(searchParams);
     try {
         const response = await fetch(`${BASE_URL}/dogs/search?${searchParams}`, {
             method: 'GET',
@@ -36,7 +35,6 @@ export const getDogs = async (searchParams) => {
         if (response.ok) {
             const dogIds = await response.json();
 
-            console.log(dogIds);
             if(dogIds.resultIds.length > 0) {
 
                 const dogDetails = await getDogDetails(dogIds.resultIds);

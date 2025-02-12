@@ -68,7 +68,7 @@ export default function Home() {
   }
 
   const FetchButton = () => (
-    <Button onPress={handleMatch} isDisabled={favoritesList.length > 0 ? false : true}>
+    <Button onPress={handleMatch} isDisabled={favoritesList.length > 0 ? false : true} color="primary">
       Fetch my match
     </Button>)
 
@@ -132,18 +132,16 @@ useEffect(() => {
 
 return (
   <>
-    <div className="container max-w-[1440px] p-8 lg:p-36">
-      <section className="hero flex flex-row justify-between">
+    <div className="container max-w-[1440px] p-8 lg:px-36">
+      <section className="hero flex flex-row flex-wrap justify-between pt-16 gap-4">
         <div>
+          <h1 className="text-4xl font-extrabold pb-8">Welcome to Fetch Match</h1>
           <p>Start finding your match by filtering for a breed (or just browse all breeds!)</p>
           <p>Saw a dog you like? Add them to your favorites</p>
-          <p>Once you are ready, click on Find my match and get matched.</p>
+          <p>Once you are ready, click on Fetch my match and get matched.</p>
         </div>
-        <div className="btn-wrapper flex gap-2">
-          <Button onPress={onOpenFav}>View favorites</Button>
-          {/* <Button onPress={handleMatch} isDisabled={favoritesList.length > 0 ? false : true}>
-            Fetch my match
-          </Button> */}
+        <div className="btn-wrapper flex gap-2 items-center">
+          <Button onPress={onOpenFav} color="primary" variant="flat">View favorites</Button>
           <FetchButton />
         </div>
       </section>
@@ -214,7 +212,7 @@ return (
             <Button color="primary" type="submit" isLoading={isLoading ? true : false}>
               Search
             </Button>
-            <Button color="secondary" type="reset">
+            <Button color="primary" variant="ghost" type="reset">
               Reset filter
             </Button>
           </div>
@@ -243,7 +241,7 @@ return (
             </CardHeader>
 
             <CardFooter>
-              <Button onPress={() => handleAddToFavorite(dog.id)} isDisabled={favoritesList.includes(dog.id)}>
+              <Button onPress={() => handleAddToFavorite(dog.id)} isDisabled={favoritesList.includes(dog.id)} size="sm">
                 Add to Favorite
               </Button>
             </CardFooter>
@@ -279,7 +277,7 @@ return (
                     </div>
 
                     <div className="flex flex-col col-span-1">
-                      <Button onPress={() => handleRemoveFavorite(favDog.id)}>
+                      <Button onPress={() => handleRemoveFavorite(favDog.id)} size="sm">
                         Remove
                       </Button>
                     </div>
