@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { getBreeds, getDogs } from "@/utils/api";
-import {Button, Form, Select, SelectItem, Input, Card, CardHeader, CardBody, CardFooter, Image, Pagination} from "@heroui/react";
+import { getBreeds, getDogs, getDogDetails } from "@/utils/api";
+import {Button, Form, Select, SelectItem, Input, Card, CardHeader, CardBody, CardFooter, Image, Pagination,   Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  useDisclosure,} from "@heroui/react";
 
 export default function Home() {
 
@@ -25,8 +30,9 @@ export default function Home() {
   const [maxPage, setMaxPage] = useState();
 
   //favorites
+  const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const [favoritesList, setFavoritesList] = useState([]);
-
+  const [favoriteDogs, setFavoriteDogs] = useState([]);
   const fetchDogs = async () => {
 
     const query = [
@@ -78,12 +84,24 @@ export default function Home() {
     //add to favorite
     console.log("I favorite:" + id);
     setFavoritesList([...favoritesList, id]);
-    console.log(favoritesList);
+  }
+
+  const handleMatch = () => {
+    //find match
   }
 
   useMemo(() => {
     window.scrollTo({top: 0})
-  }, [currentPage])
+  }, [currentPage]);
+
+  useEffect (() => {
+    const fetchDogDetails = async () => {
+      const favDogs = await getDogDetails(favoritesList);
+      setFavoriteDogs(favDogs);
+    }
+    fetchDogDetails();
+
+  }, [favoritesList]);
 
   useEffect(() => {
     console.log('pagination change');
@@ -113,11 +131,20 @@ export default function Home() {
   }, []);
 
   return (
+    <>
    <div className="container max-w-[1440px] p-8 lg:p-36">
-    <section className="hero">
-      <p>Start finding your match by filtering for a breed (or just browse all breeds!)</p>
+    <section className="hero flex flex-row justify-between">
+      <div>
+        <p>Start finding your match by filtering for a breed (or just browse all breeds!)</p>
       <p>Saw a dog you like? Add them to your favorites</p>
       <p>Once you are ready, click on Find my match and get matched.</p>
+      </div>
+      <div className="btn-wrapper flex gap-2">
+        <Button onPress={onOpen}>View favorites</Button>
+        <Button>
+          Fetch my match
+        </Button>
+      </div>
     </section>
     <div className="filter py-16">
       <Form className="w-full flex flex-row flex-wrap gap-4" onSubmit={handleSearch}  validationBehavior="native">  
@@ -198,7 +225,7 @@ export default function Home() {
       </Form>  
     </div>
     <section className="search-result gap-6 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-      {dogData && dogData.map((dog) =>(
+      {dogData && dogData?.map((dog) =>(
         <Card key={dog.id}>
          <CardBody className="overflow-visible p-0">
           <Image
@@ -227,5 +254,47 @@ export default function Home() {
       <Pagination showControls initialPage={1} total={maxPage} page={currentPage} onChange={setCurrentPage}/>
     </div>
    </div>
+         <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
+         <DrawerContent>
+           {(onClose) => (
+             <>
+               <DrawerHeader className="flex flex-col gap-1">Your favorites</DrawerHeader>
+               <DrawerBody>
+                 {favoritesList.length > 0 && favoriteDogs?.map((favDog) => (
+                <Card key={favDog.id}>
+                <CardBody className="overflow-visible p-0 grid grid-cols-12 gap-6 md:gap-4 items-center justify-center">
+                  <div className="relative col-span-4">
+                  <Image
+                    alt={`profile picture of ${favDog.name}`}
+                    className="object-cover w-full h-[120px]"
+                    src={favDog.img}
+                    width="100%"
+                  />
+                  </div>
+                <div className="flex flex-col col-span-4">
+                  <small className="text-default-500">{favDog.breed}</small>
+                  <h4 className="font-bold text-large">{favDog.name}</h4>
+                  <p className="text-tiny font-bold">{favDog.age} years old</p>
+                  <small className="text-default-500">Located in zip code: {favDog.zip_code}</small>
+                </div>
+              
+                <div className="flex flex-col col-span-1">
+                  <Button onPress={() => handleRemoveFavorite(favDog.id) }>
+                    Remove
+                  </Button>
+                </div>
+                </CardBody>          
+                </Card>))}
+               </DrawerBody>
+               <DrawerFooter>
+                 <Button color="primary" onPress={handleMatch}>
+                   Fetch my match
+                 </Button>
+               </DrawerFooter>
+             </>
+           )}
+         </DrawerContent>
+       </Drawer>
+       </>
   );
 }

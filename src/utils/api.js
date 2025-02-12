@@ -38,21 +38,13 @@ export const getDogs = async (searchParams) => {
 
             console.log(dogIds);
             if(dogIds.resultIds.length > 0) {
-                //make request to get dog details
-                const dogDetailRes = await fetch(`${BASE_URL}/dogs`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(dogIds.resultIds)
-                })
 
-                if (dogDetailRes.ok) {
-                    const dogDetails = await dogDetailRes.json();
-                    return {dogDetails: dogDetails, error: false, total: dogIds.total};
-                }
-                else {
-                    // Handle errors
-                    throw new Error(`Response status: ${response.status}`);
+                const dogDetails = await getDogDetails(dogIds.resultIds);
+
+                return { 
+                    dogDetails: dogDetails,
+                    error: false,
+                    total: dogIds.total
                 }
             }
 
@@ -67,5 +59,29 @@ export const getDogs = async (searchParams) => {
     catch (error) {
         console.error("Fetching dogs list failed with message", error);
     }
-
 }
+
+export const getDogDetails = async (ids) => {
+    try {
+        //make request to get dog details
+        const dogDetailRes = await fetch(`${BASE_URL}/dogs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(ids)
+        })
+
+        if (dogDetailRes.ok) {
+            const dogDetails = await dogDetailRes.json();
+            return dogDetails;
+        }
+        else {
+            // Handle errors
+            throw new Error(`Response status: ${response.status}`);
+        }
+    }
+    catch (error) {
+        console.error("Fetching dogs details failed with message", error);
+    }
+}
+
