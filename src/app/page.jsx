@@ -317,7 +317,7 @@ export default function Home() {
                 </CardFooter>
               </Card>
             ))}
-          {isSubmitted && !dogData.total && (
+          {isSubmitted && (dogData.length === 0) && (
             <p className="text-small text-default-500">
               No results. Please search again after updating the filter.
             </p>
