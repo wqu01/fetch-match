@@ -48,7 +48,7 @@ export const getDogs = async (searchParams) => {
 
                 if (dogDetailRes.ok) {
                     const dogDetails = await dogDetailRes.json();
-                    return {nextQuery: dogIds.next ? dogIds.next : null, prevQuery: dogIds.prev ? dogIds.prev : null, dogDetails: dogDetails, error: false};
+                    return {dogDetails: dogDetails, error: false, total: dogIds.total};
                 }
                 else {
                     // Handle errors

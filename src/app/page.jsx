@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getBreeds, getDogs } from "@/utils/api";
-import {Button, Form, Select, SelectItem, Input, Card, CardHeader, CardBody, CardFooter, Image} from "@heroui/react";
-// import Image from 'next/image';
+import {Button, Form, Select, SelectItem, Input, Card, CardHeader, CardBody, CardFooter, Image, Pagination} from "@heroui/react";
 
 export default function Home() {
 
+  const PAGE_SIZE = 20;
   //form status
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -21,34 +21,40 @@ export default function Home() {
   const [dogData, setDogData] = useState();
 
   //paginations
-  const [prevQuery, setPrevQuery] = useState();
-  const [nextQuery, setNextQuery] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxPage, setMaxPage] = useState();
+
+  //favorites
+  const [favoritesList, setFavoritesList] = useState([]);
+
+  const fetchDogs = async () => {
+
+    const query = [
+      selectedBreeds.size > 0 && `breeds=${Array.from(selectedBreeds).join('&')}`,
+      `&sort=breed:${Array.from(sortOrder).join('')}`,
+      minAge && `&ageMin=${minAge}`,
+      maxAge && `&ageMax=${maxAge}`,
+      zipcode && `&zipcode=${zipcode}`,
+      `&from=${(currentPage - 1) * PAGE_SIZE}`,
+      `&size=${PAGE_SIZE}`
+    ].filter(Boolean).join('');
+
+    const data = await getDogs(query);
+    setSubmitted(true);
+
+    if(data.error) {
+      setHasError(true);
+    }
+    setDogData(data?.dogDetails);
+    setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
+
+    setIsLoading(false);
+  }
 
   const handleSearch = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const fetchDogs = async () => {
-
-      const query = [
-        selectedBreeds.size > 0 && `breeds=${Array.from(selectedBreeds).join('&')}`,
-        `&sort=breed:${Array.from(sortOrder).join('')}`,
-        minAge && `&ageMin=${minAge}`,
-        maxAge && `&ageMax=${maxAge}`,
-        zipcode && `&zipcode=${zipcode}`
-      ].filter(Boolean).join('');
-
-      const data = await getDogs(query);
-      setSubmitted(true);
-
-      if(data.error) {
-        setHasError(true);
-      }
-      setDogData(data?.dogDetails);
-      setNextQuery(data?.nextQuery);
-      setPrevQuery(data?.prevQuery);
-
-      setIsLoading(false);
-    }
+    setCurrentPage(1);
     fetchDogs();
   }
 
@@ -64,11 +70,28 @@ export default function Home() {
     // setSelectedBreeds(new Set([]));
   }
 
-  const handleFavorite = (e) => {
-    e.preventDefault;
-    //add to favorite
+  const handleRemoveFavorite = (id) => {
+    setFavoritesList([...favoritesList.filter(faves => faves !== id)]);
   }
-   useEffect(() => {
+
+  const handleAddToFavorite = (id) => {
+    //add to favorite
+    console.log("I favorite:" + id);
+    setFavoritesList([...favoritesList, id]);
+    console.log(favoritesList);
+  }
+
+  useMemo(() => {
+    window.scrollTo({top: 0})
+  }, [currentPage])
+
+  useEffect(() => {
+    console.log('pagination change');
+    setIsLoading(true);
+    fetchDogs();
+  }, [currentPage]);
+
+  useEffect(() => {
     console.log('fetching breeds');
     const fetchBreeds = async () => {
        const data = await getBreeds();
@@ -82,23 +105,24 @@ export default function Home() {
   useEffect(() => {
     console.log('fetching init dog data');
     const fetchInitDog = async () => {
-      const data = await getDogs('sort=breed:asc');
+      const data = await getDogs(`sort=breed:asc&size=${PAGE_SIZE}`);
       setDogData(data?.dogDetails);
+      setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
     }
     fetchInitDog();
   }, []);
 
   return (
    <div className="container max-w-[1440px] p-8 lg:p-36">
-    <div className="hero">
+    <section className="hero">
       <p>Start finding your match by filtering for a breed (or just browse all breeds!)</p>
       <p>Saw a dog you like? Add them to your favorites</p>
       <p>Once you are ready, click on Find my match and get matched.</p>
-    </div>
+    </section>
     <div className="filter py-16">
       <Form className="w-full flex flex-row flex-wrap gap-4" onSubmit={handleSearch}  validationBehavior="native">  
       <Select
-        className="max-w-[280px]"
+        className="max-w-[260px]"
         size="sm"
         label="Filter by breed"
         placeholder="All breeds"
@@ -173,7 +197,7 @@ export default function Home() {
       )}
       </Form>  
     </div>
-    <div className="search-result gap-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+    <section className="search-result gap-6 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {dogData && dogData.map((dog) =>(
         <Card key={dog.id}>
          <CardBody className="overflow-visible p-0">
@@ -192,12 +216,15 @@ export default function Home() {
        
         <CardFooter>
           {/* TODO: change button state if dog was already added to favorite */}
-          <Button onPress={() => handleFavorite(dog.id)}>
+          <Button onPress={() => handleAddToFavorite(dog.id)} isDisabled={favoritesList.includes(dog.id) }>
             Add to Favorite
           </Button>
         </CardFooter>
         </Card>
       ))}
+    </section>
+    <div className="pagination flex flex-col gap-5 items-center py-16">
+      <Pagination showControls initialPage={1} total={maxPage} page={currentPage} onChange={setCurrentPage}/>
     </div>
    </div>
   );
