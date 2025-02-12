@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { getBreeds, getDogs, getDogDetails, getMatch } from "@/utils/api";
 import {
   Button,
@@ -129,7 +129,7 @@ export default function Home() {
     fetchMatch();
   };
 
-  useMemo(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [currentPage]);
 
