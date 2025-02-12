@@ -30,7 +30,6 @@ export default function Home() {
   //form status
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   //filters
   const [dogBreeds, setDogBreeds] = useState();
@@ -78,7 +77,6 @@ export default function Home() {
       .join("");
 
     const data = await getDogs(query);
-    setSubmitted(true);
 
     if (data.error) {
       setHasError(true);

@@ -35,7 +35,6 @@ export default function LoginForm() {
       if (response.ok) {
         setLoading(false);
         setAuth(true);
-        console.log(response);
         //purely for user experience purpose
         //save auth status as cookie (1 hour)
         document.cookie = "isAuth=true;max-age=3600";
