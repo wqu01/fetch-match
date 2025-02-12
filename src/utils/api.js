@@ -85,3 +85,27 @@ export const getDogDetails = async (ids) => {
     }
 }
 
+export const getMatch = async (ids) => {
+    try {
+        //make request to get match
+        const matchRes = await fetch(`${BASE_URL}/dogs/match`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(ids)
+        })
+
+        if (matchRes.ok) {
+            const matchId = await matchRes.json();
+            return matchId.match;
+        }
+        else {
+            // Handle errors
+            throw new Error(`Response status: ${response.status}`);
+        }
+    }
+    catch (error) {
+        console.error("Fetching match failed with message", error);
+    }
+}
+
