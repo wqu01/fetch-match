@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { Button, Form, Input, Link } from "@heroui/react";
 
 export default function LoginForm() {
@@ -21,28 +22,25 @@ export default function LoginForm() {
     const name = formData.get("name");
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         "https://frontend-take-home-service.fetch.com/auth/login",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, name }),
+          name: name,
+          email: email,
+        },
+        {
+          withCredentials: "true",
         },
       );
 
       //login succeed
-      if (response.ok) {
-        setLoading(false);
-        setAuth(true);
-        //purely for user experience purpose
-        //save auth status as cookie (1 hour)
-        document.cookie = "isAuth=true;max-age=3600";
-        //redirect to home page
-        router.push("/");
-      } else {
-        throw new Error(`Response status: ${response.status}`);
-      }
+      setLoading(false);
+      setAuth(true);
+      //purely for user experience purpose
+      //save auth status as cookie (1 hour)
+      document.cookie = "isAuth=true;max-age=3600";
+      //redirect to home page
+      router.push("/");
     } catch (error) {
       setLoading(false);
       setHasError(true);

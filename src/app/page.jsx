@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getBreeds, getDogs, getDogDetails, getMatch } from "@/utils/api";
+import { getBreeds, getDogIds, getDogDetails, getMatch } from "@/utils/api";
 import {
   Button,
   Form,
@@ -64,26 +64,21 @@ export default function Home() {
   const [match, setMatch] = useState();
 
   const fetchDogs = async () => {
-    const query = [
-      selectedBreeds.size > 0 &&
-        `breeds=${Array.from(selectedBreeds).join("&")}`,
-      `&sort=breed:${Array.from(sortOrder).join("")}`,
-      minAge && `&ageMin=${minAge}`,
-      maxAge && `&ageMax=${maxAge}`,
-      zipcode && `&zipCodes=${zipcode}`,
-      `&from=${(currentPage - 1) * PAGE_SIZE}`,
-      `&size=${PAGE_SIZE}`,
-    ]
-      .filter(Boolean)
-      .join("");
+    const searchParams = {
+      ...(selectedBreeds.size > 0 && { breeds: Array.from(selectedBreeds) }),
+      sort: `breed:${Array.from(sortOrder)}`,
+      ...(minAge && { ageMin: minAge }),
+      ...(maxAge && { ageMax: maxAge }),
+      ...(zipcode > 0 && { zipCodes: zipcode }),
+      from: (currentPage - 1) * PAGE_SIZE,
+      size: PAGE_SIZE,
+    };
 
-    const data = await getDogs(query);
-    if (data.error) {
-      setHasError(true);
-    }
-    setDogData(data?.dogDetails);
-    if (data.total > 0) {
-      setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
+    const dogIds = await getDogIds(searchParams);
+    const dogDetails = await getDogDetails(dogIds.ids);
+    setDogData(dogDetails);
+    if (dogIds?.total > 0) {
+      setMaxPage(Math.ceil(dogIds?.total / PAGE_SIZE));
     } else {
       setMaxPage(1);
     }
@@ -155,16 +150,6 @@ export default function Home() {
       setDogBreeds(data);
     };
     fetchBreeds();
-  }, []);
-
-  //fetch initial list of dogs
-  useEffect(() => {
-    const fetchInitDog = async () => {
-      const data = await getDogs(`sort=breed:asc&size=${PAGE_SIZE}`);
-      setDogData(data?.dogDetails);
-      setMaxPage(Math.ceil(data?.total / PAGE_SIZE));
-    };
-    fetchInitDog();
   }, []);
 
   return (
@@ -317,10 +302,8 @@ export default function Home() {
                 </CardFooter>
               </Card>
             ))}
-          {isSubmitted && (dogData.length === 0) && (
-            <p className="text-small text-default-500">
-              No results. Please search again after updating the filter.
-            </p>
+          {isSubmitted && dogData.length === 0 && (
+            <p className="text-small text-default-500">No results.</p>
           )}
         </section>
         <div className="pagination flex flex-col gap-5 items-center py-16">
