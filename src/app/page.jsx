@@ -377,6 +377,7 @@ export default function Home() {
         isOpen={isModalOpen}
         onOpenChange={onOpenModal}
         onClose={onCloseModal}
+        placement="center"
       >
         <ModalContent>
           {(onCloseModal) => (

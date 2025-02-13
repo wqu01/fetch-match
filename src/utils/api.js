@@ -40,7 +40,6 @@ export const getBreeds = async () => {
 };
 
 export const getDogDetails = async (ids) => {
-  console.log("dog ids: " + ids);
   try {
     //make request to get dog details
     const dogDetailRes = await axios.post(`${BASE_URL}/dogs`, ids, {
